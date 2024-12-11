@@ -42,6 +42,7 @@
 #include "debug/PciHost.hh"
 #include "dev/pci/device.hh"
 #include "dev/platform.hh"
+#include "mem/PciBridge.hh"
 #include "params/GenericPciHost.hh"
 #include "params/PciHost.hh"
 
@@ -72,6 +73,21 @@ PciHost::registerDevice(PciDevice *device, PciBusAddr bus_addr, PciIntPin pin)
     return DeviceInterface(*this, bus_addr, pin);
 }
 
+void PciHost::registerBridge(config_class *bridge , PciBusAddr bus_Addr)
+{
+    // create a map entry with the key as the PCIBusAddr (since this is unique)
+    // and value as a pointer to the config class object
+    // that called this function
+    auto map_entry = bridges.emplace(bus_Addr , bridge) ;
+
+    DPRINTF(PciHost, "%02x:%02x.%i: Registering Bridge\n",
+            bus_Addr.bus, bus_Addr.dev, bus_Addr.func);
+
+    fatal_if(!map_entry.second,
+             "%02x:%02x.%i: PCI bus ID collision\n",
+             bus_Addr.bus, bus_Addr.dev, bus_Addr.func);
+}
+
 PciDevice *
 PciHost::getDevice(const PciBusAddr &addr)
 {
@@ -84,6 +100,13 @@ PciHost::getDevice(const PciBusAddr &addr) const
 {
     auto device = devices.find(addr);
     return device != devices.end() ? device->second : nullptr;
+}
+
+// function to return a ptr to config_class if it is registered
+config_class * PciHost::getBridge(const PciBusAddr & addr)
+{
+   auto bridge = bridges.find(addr);
+   return bridge != bridges.end() ? bridge->second : nullptr;
 }
 
 PciHost::DeviceInterface::DeviceInterface(
@@ -145,10 +168,14 @@ GenericPciHost::read(PacketPtr pkt)
             size);
 
     PciDevice *const pci_dev(getDevice(dev_addr.first));
+    config_class *registered_bridge = getBridge(dev_addr.first);
     if (pci_dev) {
         // @todo Remove this after testing
         pkt->headerDelay = pkt->payloadDelay = 0;
         return pci_dev->readConfig(pkt);
+    } else if (registered_bridge) {
+      pkt->headerDelay = pkt->payloadDelay = 0;
+      return registered_bridge->readConfig(pkt);
     } else {
         uint8_t *pkt_data(pkt->getPtr<uint8_t>());
         std::fill(pkt_data, pkt_data + size, 0xFF);
@@ -168,17 +195,23 @@ GenericPciHost::write(PacketPtr pkt)
             pkt->getSize());
 
     PciDevice *const pci_dev(getDevice(dev_addr.first));
-    warn_if(!pci_dev,
+    config_class * registered_bridge = getBridge(dev_addr.first) ;
+
+    warn_if(!pci_dev && !registered_bridge,
             "%02x:%02x.%i: Write to config space on non-existent PCI device\n",
             dev_addr.first.bus, dev_addr.first.dev, dev_addr.first.func);
 
-    if (!pci_dev) {
+    if (!pci_dev && !registered_bridge) {
         pkt->makeAtomicResponse();
         return 20000; // 20ns default from PciDevice.py
     }
 
     // @todo Remove this after testing
     pkt->headerDelay = pkt->payloadDelay = 0;
+
+    if (registered_bridge) {
+         return registered_bridge->writeConfig(pkt);
+    }
 
     return pci_dev->writeConfig(pkt);
 }

@@ -49,6 +49,7 @@ struct GenericPciHostParams;
 
 class PciDevice;
 class Platform;
+class config_class;
 
 /**
  * The PCI host describes the interface between PCI devices and a
@@ -166,6 +167,10 @@ class PciHost : public PioDevice
     virtual DeviceInterface registerDevice(PciDevice *device,
                                            PciBusAddr bus_addr, PciIntPin pin);
 
+    // separate function to register PCI bridges .
+    // No need for Device Interface for PCI Bridges ???
+    void registerBridge(config_class *bridge , PciBusAddr bus_addr) ;
+
     /** @} */
 
   protected:
@@ -231,6 +236,7 @@ class PciHost : public PioDevice
      *         device doesn't exist.
      */
     PciDevice *getDevice(const PciBusAddr &addr);
+    config_class *getBridge(const PciBusAddr &addr);
 
     /**
      * Retrieve a PCI device from its bus address.
@@ -243,6 +249,9 @@ class PciHost : public PioDevice
   private:
     /** Currently registered PCI devices */
     std::map<PciBusAddr, PciDevice *> devices;
+
+    /** currently registered PCI bridges , if any */
+    std::map<PciBusAddr, config_class*> bridges;
 };
 
 /**

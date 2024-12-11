@@ -421,6 +421,13 @@ class Packet : public Printable, public Extensible<Packet>
 
   public:
 
+    // Have a requestor id field for use in pci express.
+    // One (bus, dev, func) pair allowed for each Root Complex.
+    int req_bus[2];
+    int req_dev[2];
+    int req_func[2];
+    bool is_posted;
+
     /**
      * The extra delay from seeing the packet until the header is
      * transmitted. This delay is used to communicate the crossbar
@@ -605,7 +612,13 @@ class Packet : public Printable, public Extensible<Packet>
         assert(isRequest());
         return cmd.needsWritable();
     }
-    bool needsResponse() const       { return cmd.needsResponse(); }
+    bool needsResponse() const {
+        if (!is_posted) {
+            return cmd.needsResponse();
+        }
+        return false;
+    }
+
     bool isInvalidate() const        { return cmd.isInvalidate(); }
     bool isEviction() const          { return cmd.isEviction(); }
     bool isClean() const             { return cmd.isClean(); }
@@ -883,6 +896,14 @@ class Packet : public Printable, public Extensible<Packet>
            headerDelay(0), snoopDelay(0),
            payloadDelay(0), senderState(NULL)
     {
+        is_posted = false;
+        req_bus[0] = -1;
+        req_bus[1] = -1;
+        req_dev[0] = -1;
+        req_dev[1] = -1;
+        req_func[0] = -1;
+        req_func[1] = -1;
+
         flags.clear();
         if (req->hasPaddr()) {
             addr = req->getPaddr();
@@ -924,6 +945,14 @@ class Packet : public Printable, public Extensible<Packet>
            headerDelay(0),
            snoopDelay(0), payloadDelay(0), senderState(NULL)
     {
+        is_posted=false;
+        req_bus[0] = -1;
+        req_bus[1] = -1;
+        req_dev[0] = -1;
+        req_dev[1] = -1;
+        req_func[0] = -1;
+        req_func[1] = -1;
+
         flags.clear();
         if (req->hasPaddr()) {
             addr = req->getPaddr() & ~(_blkSize - 1);
@@ -955,6 +984,14 @@ class Packet : public Printable, public Extensible<Packet>
            payloadDelay(pkt->payloadDelay),
            senderState(pkt->senderState)
     {
+        is_posted=false ;
+        req_bus[0] = pkt->req_bus[0];
+        req_bus[1] = pkt->req_bus[1];
+        req_dev[0] = pkt->req_dev[0];
+        req_dev[1] = pkt->req_dev[1];
+        req_func[0] = -pkt->req_func[0];
+        req_func[1] = pkt->req_func[1];
+
         if (!clear_flags)
             flags.set(pkt->flags & COPY_FLAGS);
 
