@@ -227,4 +227,4 @@ def connectGPU(system, args):
 
     # Set bit 6 to enable atomic requestor, meaning this device can request
     # atomics from other PCI devices.
-    system.pc.south_bridge.gpu.PXCAPDevCtrl2 = 0x00000040
+    system.pc.south_bridge.gpu.PXCAPDevCtrl2 = 0x0040
