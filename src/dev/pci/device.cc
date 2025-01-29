@@ -442,8 +442,21 @@ PciDevice::serialize(CheckpointOut &cp) const
     paramOut(cp, csprintf("pxcap.pxlcap"), uint32_t(pxcap.pxlcap));
     paramOut(cp, csprintf("pxcap.pxlc"), uint16_t(pxcap.pxlc));
     paramOut(cp, csprintf("pxcap.pxls"), uint16_t(pxcap.pxls));
+    paramOut(cp, csprintf("pxcap.pxscap"), uint32_t(pxcap.pxscap));
+    paramOut(cp, csprintf("pxcap.pxsc"), uint16_t(pxcap.pxsc));
+    paramOut(cp, csprintf("pxcap.pxss"), uint16_t(pxcap.pxss));
+    paramOut(cp, csprintf("pxcap.pxrcap"), uint16_t(pxcap.pxrcap));
+    paramOut(cp, csprintf("pxcap.pxrc"), uint16_t(pxcap.pxrc));
+    paramOut(cp, csprintf("pxcap.pxrs"), uint32_t(pxcap.pxrs));
     paramOut(cp, csprintf("pxcap.pxdcap2"), uint32_t(pxcap.pxdcap2));
-    paramOut(cp, csprintf("pxcap.pxdc2"), uint32_t(pxcap.pxdc2));
+    paramOut(cp, csprintf("pxcap.pxdc2"), uint16_t(pxcap.pxdc2));
+    paramOut(cp, csprintf("pxcap.pxds2"), uint16_t(pxcap.pxds2));
+    paramOut(cp, csprintf("pxcap.pxlcap2"), uint32_t(pxcap.pxlcap2));
+    paramOut(cp, csprintf("pxcap.pxlc2"), uint16_t(pxcap.pxlc2));
+    paramOut(cp, csprintf("pxcap.pxls2"), uint16_t(pxcap.pxls2));
+    paramOut(cp, csprintf("pxcap.pxscap2"), uint32_t(pxcap.pxscap2));
+    paramOut(cp, csprintf("pxcap.pxsc2"), uint16_t(pxcap.pxsc2));
+    paramOut(cp, csprintf("pxcap.pxss2"), uint16_t(pxcap.pxss2));
 }
 
 void
@@ -529,10 +542,36 @@ PciDevice::unserialize(CheckpointIn &cp)
     pxcap.pxlc = tmp16;
     paramIn(cp, csprintf("pxcap.pxls"), tmp16);
     pxcap.pxls = tmp16;
+    paramIn(cp, csprintf("pxcap.pxscap"), tmp32);
+    pxcap.pxscap = tmp32;
+    paramIn(cp, csprintf("pxcap.pxsc"), tmp16);
+    pxcap.pxsc = tmp16;
+    paramIn(cp, csprintf("pxcap.pxss"), tmp16);
+    pxcap.pxss = tmp16;
+    paramIn(cp, csprintf("pxcap.pxrcap"), tmp16);
+    pxcap.pxrcap = tmp16;
+    paramIn(cp, csprintf("pxcap.pxrc"), tmp16);
+    pxcap.pxrc = tmp16;
+    paramIn(cp, csprintf("pxcap.pxrs"), tmp32);
+    pxcap.pxrs = tmp32;
     paramIn(cp, csprintf("pxcap.pxdcap2"), tmp32);
     pxcap.pxdcap2 = tmp32;
-    paramIn(cp, csprintf("pxcap.pxdc2"), tmp32);
-    pxcap.pxdc2 = tmp32;
+    paramIn(cp, csprintf("pxcap.pxdc2"), tmp16);
+    pxcap.pxdc2 = tmp16;
+    paramIn(cp, csprintf("pxcap.pxds2"), tmp16);
+    pxcap.pxds2 = tmp16;
+    paramIn(cp, csprintf("pxcap.pxlcap2"), tmp32);
+    pxcap.pxlcap2 = tmp32;
+    paramIn(cp, csprintf("pxcap.pxlc2"), tmp16);
+    pxcap.pxlc2 = tmp16;
+    paramIn(cp, csprintf("pxcap.pxls2"), tmp16);
+    pxcap.pxls2 = tmp16;
+    paramIn(cp, csprintf("pxcap.pxscap2"), tmp32);
+    pxcap.pxscap2 = tmp32;
+    paramIn(cp, csprintf("pxcap.pxsc2"), tmp16);
+    pxcap.pxsc2 = tmp16;
+    paramIn(cp, csprintf("pxcap.pxss2"), tmp16);
+    pxcap.pxss2 = tmp16;
 }
 
 PciEndpoint::PciEndpoint(const PciEndpointParams &p)
